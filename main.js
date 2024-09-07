@@ -61,26 +61,25 @@ function checkSyntax(content) {
         const type = match.groups.type.trim();
 
         if (!types[type])
-            danger('Wrong type: ' + type)
+            danger('Wrong type: \n' + type)
     }
 }
 
 function verifyFile(content) {
     const images = content.match(/upload\/(?<image>.*)/mg);
 
-    if (!images)
-        return;
+    if (images !== null) {
+        images.forEach(item => {
+            if (item.includes('-'))
+                danger(`Wrong option: ${item}`)
+        });
+        checkImages(images.filter(i => !i.includes('-')));
+    }
 
-    images.forEach(item => {
-        if (item.includes('-'))
-            danger(`Wrong option: ${item}`)
-    });
-
-    checkImages(images.filter(i => !i.includes('-')));
     checkSyntax(content);
 }
 
-async function readZipFile(doc){
+async function readZipFile(doc) {
     return new Promise(resolve => {
         fs.createReadStream('./words/' + doc)
             .pipe(unzipper.Parse())
@@ -107,7 +106,7 @@ async function readZipFile(doc){
 }
 
 (async function () {
-    for (const doc of docs){
+    for (const doc of docs) {
         info('Read: ' + './words/' + doc);
         await readZipFile(doc)
     }
